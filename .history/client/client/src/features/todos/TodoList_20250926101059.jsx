@@ -1,0 +1,97 @@
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchTodos, updateTodos, deleteTodos } from "./todoSlice";
+import { useEffect } from "react";
+import { CiSearch } from "react-icons/ci";
+import { MdOutlineEdit } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
+import "./TodoList.css";
+import AddTodo from "./AddTodo";
+
+function TodoList() {
+  const dispatch = useDispatch();
+  const todos = useSelector((state) => {
+    console.log("hhhhhhhhhhhh", state.todos);
+    return state.todos.item;
+  });
+  const status = useSelector((state) => {
+    return state.todos.status;
+  });
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchTodos());
+    }
+  }, [status, dispatch]);
+
+  const handleToggle = (todo) => {
+    dispatch(
+      updateTodos({ id: todo._id, data: { completed: !todo.completed } })
+    );
+    console.log("clicked");
+  };
+
+  const handleDelete = (id) => {
+    dispatch(deleteTodos(id));
+  };
+
+  //show add form
+  const [showAddForm, setShowAddForm] = useState(false);
+  const handleShowAdd = () => {
+    setShowAddForm(!showAddForm);
+  };
+
+  return (
+    <div>
+      <h1>TODO LIST</h1>
+      {status === "loading" && <p>loading data...</p>}
+      {status === "succeeded" && todos.length === 0 && <p>no data yet</p>}
+      <form>
+        <div className="input">
+          <input type="text" placeholder="Search note..." />
+          <div className="icon">
+            <CiSearch />
+          </div>
+        </div>
+        <main>
+          {todos.map((todo) => (
+            <div className="card" key={todo._id}>
+              <span
+                onClick={() => {
+                  handleToggle(todo);
+                  console.log(todo.completed);
+                }}
+                style={{
+                  textDecoration: `${todo.completed ? "line-through" : "none"}`,
+                  color: `${todo.completed ? "#a8a8a8ff" : "black"}`,
+                  cursor: "pointer",
+                }}
+              >
+                {todo.title}
+              </span>
+              <div
+                className="delete"
+                onClick={() => {
+                  handleDelete(todo._id);
+                }}
+              >
+                <MdDelete />
+              </div>
+            </div>
+          ))}
+        </main>
+      </form>
+      <button
+        className="showButton"
+        onClick={() => {
+          handleShowAdd();
+        }}
+      >
+        Add
+      </button>
+      {showAddForm ? <AddTodo /> : null}
+    </div>
+  );
+}
+
+export default TodoList;
